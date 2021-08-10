@@ -1,8 +1,7 @@
 resource "vsphere_virtual_machine" "vm1" {
-  name             = "testvm01"
+  name             = "Jenkins"
   resource_pool_id = "${data.vsphere_compute_cluster.cluster.resource_pool_id}"
   datastore_id     = "${data.vsphere_datastore.datastore.id}"
-  folder = "/MyDC/vm/TestVM"
  
   num_cpus = 2
   memory   = 4096
@@ -27,16 +26,16 @@ resource "vsphere_virtual_machine" "vm1" {
  
     customize {
       linux_options {
-        host_name = "testvm01"
-        domain    = "company.com"
+        host_name = "jenkins"
+        domain    = "hydrangea.com"
       }
-      dns_server_list     = ["10.0.0.53", "10.0.53.53"]
+      dns_server_list     = ["192.168.1.1", "8.8.8.8"]
       network_interface {
-        ipv4_address = "10.0.0.101"
+        ipv4_address = "192.168.1.100"
         ipv4_netmask = 24
       }
  
-      ipv4_gateway = "10.0.0.1"
+      ipv4_gateway = "192.168.1.1"
     }
   }
 }

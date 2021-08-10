@@ -1,4 +1,4 @@
-variable "vpshere_user" {
+variable "vsphere_user" {
   description = "The VSphere User."
   type        = string
 }
