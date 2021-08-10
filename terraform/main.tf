@@ -25,3 +25,8 @@ data "vsphere_network" "network" {
   name          = "public"
   datacenter_id = data.vsphere_datacenter.dc.id
 }
+
+data "vsphere_virtual_machine" "template" {
+  name          = "Ubuntu-Server-20.04-LTS"
+  datacenter_id = "${data.vsphere_datacenter.dc.id}"
+} 
