@@ -1,0 +1,44 @@
+---
+- name: Install gitlab
+  hosts: gitlab
+  become: yes
+
+  tasks:
+    - name: Install curl policycoreutils openssh-server perl
+      dnf:
+        name: curl, policycoreutils, openssh-server, perl, postfix
+        state: latest
+
+    - name: enable and start postfix
+        service:
+          name: postfix
+          enabled: yes
+          state: started
+
+    - name: enable and start sshd
+      service:
+        name: sshd
+        enabled: yes
+        state: started
+
+    - name: Opening the https
+      firewalld:
+        service: https
+        permanent: true
+        state: enabled
+
+    - name: Opening the http
+      firewalld:
+        service: http
+        permanent: true
+        state: enabled
+
+    - name: restart firewalld
+      ansible.builtin.systemd:
+        name: firewalld
+        daemon_reload: yes
+
+    - name: install gitlab
+      shell: |
+        curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.rpm.sh
+        bash
