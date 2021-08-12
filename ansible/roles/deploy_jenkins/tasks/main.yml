@@ -1,0 +1,27 @@
+---
+# tasks file for deploy-jenkins
+- name: Enable Jenkins RedHat Repo
+  shell: |
+    wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+  args:
+    warn: false
+
+- name: Install Jenkins
+  yum: name=jenkins state=latest
+
+- name: Reload Daemons
+  systemd: daemon_reload=yes
+
+- name: Opening the HTTP
+  firewalld:
+     port: 8080/tcp
+     permanent: true
+     state: enabled
+     immediate: true
+
+- name: Start and Enable Jenkins
+  service:
+    name: jenkins
+    enabled: yes
+    state: started
