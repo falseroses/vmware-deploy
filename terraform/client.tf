@@ -3,6 +3,7 @@ resource "vsphere_virtual_machine" "client" {
   firmware = "efi"
   resource_pool_id = "${data.vsphere_compute_cluster.cluster.resource_pool_id}"
   datastore_id     = "${data.vsphere_datastore.datastore.id}"
+  depends_on = [vsphere_virtual_machine.bind9]
 
   num_cpus = 2
   memory   = 4096
@@ -30,7 +31,7 @@ resource "vsphere_virtual_machine" "client" {
         host_name = "client"
         domain    = "hydrangea.com"
       }
-      dns_server_list     = ["192.168.1.1", "8.8.8.8"]
+      dns_server_list     = ["192.168.1.102", "192.168.1.1"]
       network_interface {
         ipv4_address = "192.168.1.103"
         ipv4_netmask = 24
