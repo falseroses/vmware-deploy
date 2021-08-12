@@ -1,4 +1,4 @@
-resource "vsphere_virtual_machine" "jenkins" {
+/*resource "vsphere_virtual_machine" "jenkins" {
   name             = "Jenkins"
   firmware = "efi"
   resource_pool_id = "${data.vsphere_compute_cluster.cluster.resource_pool_id}"
@@ -39,4 +39,4 @@ resource "vsphere_virtual_machine" "jenkins" {
       ipv4_gateway = "192.168.1.1"
     }
   }
-}
+}*/

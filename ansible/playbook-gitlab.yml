@@ -5,15 +5,20 @@
 
   tasks:
     - name: Install curl policycoreutils openssh-server perl
-      dnf:
-        name: curl, policycoreutils, openssh-server, perl, postfix
-        state: latest
+      dnf: name={{ item }} state=latest
+      loop:
+        - curl
+        - policycoreutils
+        - openssh-server
+        - perl
+        - postfix
+
 
     - name: enable and start postfix
-        service:
-          name: postfix
-          enabled: yes
-          state: started
+      service:
+        name: postfix
+        enabled: yes
+        state: started
 
     - name: enable and start sshd
       service:
@@ -38,7 +43,8 @@
         name: firewalld
         daemon_reload: yes
 
+    - name: install gitlab packages
+      shell: curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.rpm.sh | bash
+
     - name: install gitlab
-      shell: |
-        curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.rpm.sh
-        bash
+      dnf: name=gitlab-ce state=latest

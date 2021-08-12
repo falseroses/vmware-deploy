@@ -5,12 +5,13 @@
 
   tasks:
     - name: Install bind bind-utils
-      dnf:
-         name: bind, bind-utils
-         state: latest
+      dnf: name={{ item }} state=latest
+      loop:
+        - bind
+        - bind-utils
 
     - name: enable and start bind9
       service:
-         name: bind9
+         name: named
          enabled: yes
          state: started
