@@ -4,7 +4,7 @@
   become: yes
 
   tasks:
-    - name: Install curl policycoreutils openssh-server perl
+    - name: Install curl policycoreutils openssh-server perl langpacks-en glibc-all-langpacks
       dnf: name={{ item }} state=latest
       loop:
         - curl
@@ -12,6 +12,9 @@
         - openssh-server
         - perl
         - postfix
+        - langpacks-en
+        - glibc-all-langpacks
+
 
 
     - name: enable and start postfix
@@ -26,25 +29,27 @@
         enabled: yes
         state: started
 
-    - name: Opening the https
+    - name: Opening the HTTPS
       firewalld:
-        service: https
+        port: 443/tcp
         permanent: true
         state: enabled
+        immediate: true
 
-    - name: Opening the http
+    - name: Opening the HTTP
       firewalld:
-        service: http
+        port: 8080/tcp
         permanent: true
         state: enabled
-
-    - name: restart firewalld
-      ansible.builtin.systemd:
-        name: firewalld
-        daemon_reload: yes
+        immediate: true
 
     - name: install gitlab packages
-      shell: curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.rpm.sh | bash
+      shell: curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.rpm.sh && bash && dnf install -y gitlab-ce
 
-    - name: install gitlab
-      dnf: name=gitlab-ce state=latest
+    - name: reconfigure gitlab-ce
+      shell: gitlab-ctl reconfigure
+
+    - name: Restart firewalld
+      systemd:
+        name: firewalld
+        state: restarted
