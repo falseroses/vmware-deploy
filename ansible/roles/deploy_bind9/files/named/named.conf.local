@@ -1,0 +1,8 @@
+zone "hydrangea.com" {
+    type master;
+    file "/etc/named/zones/db.hydrangea.com";
+};
+zone "168.192.in-addr.arpa" {
+    type master;
+    file "/etc/named/zones/db.192.168";
+};

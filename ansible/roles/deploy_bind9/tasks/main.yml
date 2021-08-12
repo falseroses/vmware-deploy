@@ -1,0 +1,18 @@
+---
+# tasks file for deploy_bind9
+- name: Install Bind and Bind-Utils
+  dnf: name={{ item }} state=latest
+  loop:
+     - bind
+     - bind-utils
+
+- name: Copy Bind 9 Config
+  synchronize:
+     src: "{{ role_path }}/files/"
+     dest: /etc/
+
+- name: Enable and Start Bind 9
+  service:
+     name: named
+     enabled: yes
+     state: started
