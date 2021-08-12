@@ -11,6 +11,13 @@
      src: "{{ role_path }}/files/"
      dest: /etc/
 
+- name: Opening the DNS Port
+  firewalld:
+     service: dns
+     permanent: true
+     state: enabled
+     immediate: true
+
 - name: Enable and Start Bind 9
   service:
      name: named
