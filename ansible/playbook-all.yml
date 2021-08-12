@@ -1,0 +1,12 @@
+---
+- name: Install Jenkins
+  hosts: jenkins
+  become: yes
+  roles:
+    - deploy_jenkins
+
+- name: Install Bind 9
+  hosts: bind9
+  become: yes
+  roles:
+    - deploy_bind9
