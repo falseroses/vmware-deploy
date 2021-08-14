@@ -1,0 +1,34 @@
+---
+# tasks file for deploy_gitlab
+- name: Install Dependencies and Postfix
+  dnf: name={{ item }} state=latest
+  loop:
+    - curl
+    - policycoreutils
+    - openssh-server
+    - openssh-clients
+    - postfix
+
+- name: Enable and Start Postfix
+  service:
+    name: postfix
+    enabled: yes
+    state: started
+
+- name: Allow HTTP and HTTPS
+  firewalld:
+    service: "{{ item }}"
+    permanent: true
+    state: enabled
+    immediate: true
+  with_items:
+    - http
+    - https
+
+- name: Add the GitLab Package Repository
+  shell: curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh | sudo bash
+  args:
+     warn: no
+
+- name: Install GitLab
+  shell: GITLAB_ROOT_PASSWORD="{{ lookup('env', 'GITLAB_ROOT_PASSWORD')}}" EXTERNAL_URL="http://127.0.0.1" dnf install -y gitlab-ce

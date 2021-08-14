@@ -10,3 +10,9 @@
   become: yes
   roles:
     - deploy_bind9
+
+- name: Install GitLab
+  hosts: gitlab
+  become: yes
+  roles:
+    - deploy_gitlab
