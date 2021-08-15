@@ -17,7 +17,6 @@
         name: "{{ item }}"
         extra_args: --user
       with_items:
-        - pip
         - wheel
         - setuptools-rust
         - cryptography
