@@ -15,13 +15,19 @@
 
 - name: Allow HTTP and HTTPS
   firewalld:
-    service: "{{ item }}"
+    port: "{{ item }}"
     permanent: true
     state: enabled
     immediate: true
   with_items:
-    - http
-    - https
+    - 8080/tcp
+    - 8443/tcp
+
+- name: Start and Enable Jenkins
+  service:
+    name: jenkins
+    enabled: yes
+    state: started
 
 - name: Upgrade PIP
   pip:
@@ -59,7 +65,9 @@
   file:
     path: /var/lib/jenkins/keystore
     state: directory
-    mode: 0700
+    owner: jenkins
+    group: jenkins
+    mode: 0755
 
 - name: Create PKCS12
   shell: openssl pkcs12 -export -out /var/lib/jenkins/jenkins_hydrangea.p12 -passout 'pass:password' -inkey /var/lib/jenkins/jenkins_hydrangea.key -in /var/lib/jenkins/jenkins_hydrangea.crt -name jenkins.hydrangea.com
@@ -72,8 +80,7 @@
      src: jenkins
      dest: /etc/sysconfig/
 
-- name: Start and Enable Jenkins
+- name: Restart Jenkins
   service:
     name: jenkins
-    enabled: yes
-    state: started
+    state: restarted

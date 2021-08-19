@@ -5,11 +5,17 @@
   roles:
     - deploy_bind9
 
-- name: Install Jenkins
+#- name: Install Jenkins
+#  hosts: jenkins
+#  become: yes
+#  roles:
+#    - deploy_jenkins
+
+- name: Install Jenkins with SSL
   hosts: jenkins
   become: yes
   roles:
-    - deploy_jenkins
+    - deploy_ssl_jenkins
 
 #- name: Install GitLab
 #  hosts: gitlab
