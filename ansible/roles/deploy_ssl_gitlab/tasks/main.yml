@@ -1,0 +1,81 @@
+---
+# tasks file for deploy_ssl_github
+- name: Install Dependencies and Postfix
+  dnf: name={{ item }} state=latest
+  loop:
+    - curl
+    - policycoreutils
+    - openssh-server
+    - openssh-clients
+    - postfix
+
+- name: Upgrade PIP
+  pip:
+    name: pip
+    extra_args: --upgrade
+
+- name: Install Python Dependencies
+  pip:
+    name: "{{ item }}"
+    extra_args: --user
+  with_items:
+    - wheel
+    - setuptools-rust
+    - cryptography
+    - pyOpenSSL
+
+- name: Enable and Start Postfix
+  service:
+    name: postfix
+    enabled: yes
+    state: started
+
+- name: Allow HTTP and HTTPS
+  firewalld:
+    service: "{{ item }}"
+    permanent: true
+    state: enabled
+    immediate: true
+  with_items:
+    - http
+    - https
+
+- name: Add the GitLab Package Repository
+  shell: curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh | sudo bash
+  args:
+     warn: no
+
+- name: Install GitLab
+  dnf:
+    name: gitlab-ce
+    state: latest
+
+- name: Creates SSL Directory
+  file:
+    path: /etc/gitlab/ssl
+    state: directory
+
+- name: Generate a Self Signed OpenSSL Private Key
+  openssl_privatekey:
+     path: /etc/gitlab/ssl/gitlab.hydrangea.com.key
+
+- name: Generate a Self Signed OpenSSL Certificate Signing Request
+  openssl_csr:
+     path: /etc/gitlab/ssl/gitlab.hydrangea.com.csr
+     privatekey_path: /etc/gitlab/ssl/gitlab.hydrangea.com.key
+     common_name: gitlab.hydrangea.com
+
+- name: Generate a Self Signed OpenSSL Certificate
+  openssl_certificate:
+     path: /etc/gitlab/ssl/gitlab.hydrangea.com.crt
+     privatekey_path: /etc/gitlab/ssl/gitlab.hydrangea.com.key
+     csr_path: /etc/gitlab/ssl/gitlab.hydrangea.com.csr
+     provider: selfsigned
+
+- name: Copy GitLab Config
+  synchronize:
+     src: gitlab.rb
+     dest: /etc/gitlab/
+
+- name: GitLab Reconfigure
+  shell: GITLAB_ROOT_PASSWORD="{{ lookup('env', 'GITLAB_ROOT_PASSWORD')}}" gitlab-ctl reconfigure

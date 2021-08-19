@@ -11,8 +11,14 @@
   roles:
     - deploy_bind9
 
-- name: Install GitLab
+#- name: Install GitLab
+#  hosts: gitlab
+#  become: yes
+#  roles:
+#    - deploy_gitlab
+
+- name: Install GitLab with SSL
   hosts: gitlab
   become: yes
   roles:
-    - deploy_gitlab
+    - deploy_ssl_gitlab
