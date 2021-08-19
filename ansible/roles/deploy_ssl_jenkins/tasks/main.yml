@@ -1,0 +1,79 @@
+---
+# tasks file for deploy-jenkins
+- name: Enable Jenkins RedHat Repo
+  shell: |
+    wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+  args:
+    warn: false
+
+- name: Install Jenkins
+  yum: name=jenkins state=latest
+
+- name: Reload Daemons
+  systemd: daemon_reload=yes
+
+- name: Allow HTTP and HTTPS
+  firewalld:
+    service: "{{ item }}"
+    permanent: true
+    state: enabled
+    immediate: true
+  with_items:
+    - http
+    - https
+
+- name: Upgrade PIP
+  pip:
+    name: pip
+    extra_args: --upgrade
+
+- name: Install Python Dependencies
+  pip:
+    name: "{{ item }}"
+    extra_args: --user
+  with_items:
+    - wheel
+    - setuptools-rust
+    - cryptography
+    - pyOpenSSL
+
+- name: Generate a Self Signed OpenSSL Private Key
+  openssl_privatekey:
+     path: /var/lib/jenkins/jenkins_hydrangea.key
+
+- name: Generate a Self Signed OpenSSL Certificate Signing Request
+  openssl_csr:
+     path: /var/lib/jenkins/jenkins_hydrangea.csr
+     privatekey_path: /var/lib/jenkins/jenkins_hydrangea.key
+     common_name: jenkins.hydrangea.com
+
+- name: Generate a Self Signed OpenSSL Certificate
+  openssl_certificate:
+     path: /var/lib/jenkins/jenkins_hydrangea.crt
+     privatekey_path: /var/lib/jenkins/jenkins_hydrangea.key
+     csr_path: /var/lib/jenkins/jenkins_hydrangea.csr
+     provider: selfsigned
+
+- name: Creates Keystore Folder
+  file:
+    path: /var/lib/jenkins/keystore
+    state: directory
+    mode: 0700
+
+- name: Create PKCS12
+  shell: openssl pkcs12 -export -out /var/lib/jenkins/jenkins_hydrangea.p12 -passout 'pass:password' -inkey /var/lib/jenkins/jenkins_hydrangea.key -in /var/lib/jenkins/jenkins_hydrangea.crt -name jenkins.hydrangea.com
+
+- name: Create Java Keystore file (JKS)
+  shell: keytool -importkeystore -srckeystore /var/lib/jenkins/jenkins_hydrangea.p12 -srcstorepass 'password' -srcstoretype PKCS12 -srcalias jenkins.hydrangea.com -deststoretype JKS -destkeystore /var/lib/jenkins/keystore/jenkins_hydrangea.jks -deststorepass 'password' -destalias jenkins.hydrangea.com
+
+- name: Copy Jenkins Config
+  synchronize:
+     src: jenkins
+     dest: /etc/sysconfig/
+
+- name: Start and Enable Jenkins
+  service:
+    name: jenkins
+    enabled: yes
+    state: started
