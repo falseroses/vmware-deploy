@@ -3,7 +3,6 @@ resource "vsphere_virtual_machine" "client" {
   firmware = "efi"
   resource_pool_id = "${data.vsphere_compute_cluster.cluster.resource_pool_id}"
   datastore_id     = "${data.vsphere_datastore.datastore.id}"
-  depends_on = [vsphere_virtual_machine.bind9]
 
   num_cpus = 2
   memory   = 4096
